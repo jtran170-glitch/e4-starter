@@ -320,12 +320,6 @@ export class GameScene extends Phaser.Scene implements Arena {
         x,
         y,
         "drone",
-        2,
-        100,
-        13,
-        0.015,
-        true,
-        false,
         x,
         x < WIDTH / 2 ? 1 : -1,
       ),
@@ -450,49 +444,8 @@ export class GameScene extends Phaser.Scene implements Arena {
     y: number,
     indexInWave: number,
   ): void {
-    let hp = 1, speed = 100, damage = 10, dropChance = 0.015, canShoot = true;
-
-    if (kind === "drone") {
-      hp = 2;
-      speed = 100;
-      damage = 13;
-      dropChance = 0.015;
-      canShoot = true;
-    } else if (kind === "dart") {
-      hp = 1;
-      speed = 150;
-      damage = 12;
-      dropChance = 0.015;
-      canShoot = false;
-    } else if (kind === "lancer") {
-      hp = 4;
-      speed = 250;
-      damage = 15;
-      dropChance = 0.06;
-      canShoot = true;
-    } else if (kind === "turret") {
-      hp = 12;
-      speed = 400;
-      damage = 19;
-      dropChance = 0.3;
-      canShoot = true;
-    }
-
     const facing = indexInWave % 2 === 0 ? 1 : -1;
-    const enemy = new ShmupPrefabSprite(
-      this,
-      x,
-      y,
-      kind,
-      hp,
-      speed,
-      damage,
-      dropChance,
-      canShoot,
-      false,
-      x,
-      facing,
-    );
+    const enemy = new ShmupPrefabSprite(this, x, y, kind, x, facing);
     this.enemies.push(enemy);
   }
 

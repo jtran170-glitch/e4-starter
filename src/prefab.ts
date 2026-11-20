@@ -1,6 +1,24 @@
 import Phaser from "phaser";
 import { Actor, type Arena, WIDTH } from "./actors.ts";
 
+export interface PrefabConfig {
+  hp: number;
+  score: number;
+  radius: number;
+  dropChance: number;
+  canShoot: boolean;
+}
+
+export const PREFAB_STATS: Record<string, PrefabConfig> = {
+  drone: { hp: 2, score: 100, radius: 13, dropChance: 0.015, canShoot: true },
+  dart: { hp: 1, score: 150, radius: 12, dropChance: 0.015, canShoot: false },
+  turret: { hp: 12, score: 400, radius: 19, dropChance: 0.3, canShoot: true },
+  lancer: { hp: 4, score: 250, radius: 15, dropChance: 0.06, canShoot: true },
+  boss: { hp: 900, score: 10000, radius: 46, dropChance: 0, canShoot: true },
+  shield: { hp: 0, score: 0, radius: 14, dropChance: 0, canShoot: false },
+  spread: { hp: 0, score: 0, radius: 14, dropChance: 0, canShoot: false },
+};
+
 function aim(from: { x: number; y: number }, arena: Arena): number {
   return Math.atan2(arena.player.y - from.y, arena.player.x - from.x);
 }
@@ -16,22 +34,26 @@ export class ShmupPrefabSprite extends Actor {
   // spin: turrets rotate using this
   spin = 0;
 
+  hp: number;
+  score: number;
+  dropChance: number;
+  canShoot: boolean;
+
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
     public kind: string,
-    public hp: number,
-    public score: number,
-    radius: number,
-    public dropChance: number,
-    public canShoot: boolean,
-    public isPickup: boolean,
     public homeX: number,
     public side: number,
   ) {
-    super(scene, x, y, kind, radius);
-    this.maxHp = hp;
+    const stats = PREFAB_STATS[kind];
+    super(scene, x, y, kind, stats.radius);
+    this.hp = stats.hp;
+    this.maxHp = stats.hp;
+    this.score = stats.score;
+    this.dropChance = stats.dropChance;
+    this.canShoot = stats.canShoot;
   }
 
   step(arena: Arena): void {
@@ -109,7 +131,6 @@ export class ShmupPrefabSprite extends Actor {
 
   /** Returns true when this hit destroys the prefab. */
   takeDamage(amount: number): boolean {
-    if (this.isPickup) return false;
     this.hp -= amount;
     this.flash = 3;
     return this.hp <= 0;
@@ -126,12 +147,6 @@ export class ShmupBoss extends ShmupPrefabSprite {
       WIDTH / 2,
       -90,
       "boss",
-      900,
-      10000,
-      46,
-      0,
-      true,
-      false,
       WIDTH / 2,
       1,
     );
@@ -209,7 +224,7 @@ export class ShmupBoss extends ShmupPrefabSprite {
 
 export class ShmupPowerUp extends ShmupPrefabSprite {
   constructor(scene: Phaser.Scene, x: number, y: number, kind) {
-    super(scene, x, y, kind, 0, 0, 14, 0, false, true, x, 1);
+    super(scene, x, y, kind, x, 1);
   }
 
   override step(): void {
